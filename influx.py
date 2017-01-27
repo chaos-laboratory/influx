@@ -2,21 +2,30 @@ from influxdb import InfluxDBClient
 import requests
 import datetime as datetime
 import time as time
-import csv
+import knowntypes
+import thermistor
 
 access_token = "a29cef4e07f57df80ddcc15fb5857e9fc5b98ce0"
 
 device_API = 'https://api.particle.io/v1/devices/?access_token=' + access_token
 
 file_name = datetime.datetime.isoformat(datetime.datetime.now())
-client = InfluxDBClient('localhost', 8086, 'jcoleman', 'four', 'particles')
+
+# influx creds
+usr = 'jcoleman'
+passwd = 'four'
+db = 'particles'
+client = InfluxDBClient('localhost', 8086, usr, passwd, db)
+
+# this is used to get the correct series to publish to
+get_measurements = knowntypes.Measurements()
 # client.create_database(file_name)
-# file_suffix = "_data_log.csv"
+# end influx stuff
 
 devices = []
+connected_devices = []
 
-collect_for = 5  # seconds
-end = time.time() + collect_for
+collect_for = 10  # seconds
 
 static_variables = ["location"]
 
@@ -62,20 +71,12 @@ class ConnectedDevice:
         self.name = ""
         self.api = "https://api.particle.io/v1/devices/" + self.id + "/?access_token=" + access_token
         self.variables = []
+        self.val = None
         self.json = ""
 
         self.get_meta_data()
+        self.measure = ""
         # self.print_attributes()
-
-    def print_attributes(self):
-        print self.name
-        print self.id
-        print self.location
-        print self.api
-        if self.variables:
-            print "Variables are: "
-            for variable in self.variables:
-                print "\t" + variable
 
     def url_json(self, url):
         req = requests.get(url)
@@ -110,76 +111,53 @@ class ConnectedDevice:
         self.result = self.result["result"]
         return self.result
 
-    def influx_push(self,var,):
+    def influx_push(self, var, curr_time):
+        self.measure = get_measurements.return_measurement(var)
+        self.val = self.return_a_variable(var)
+        if self.measure == "temp_resist":
+            self.val = thermistor.resist_to_celsius(float(self.val))
+            self.measure = "temp_c"
         json_body = [
             {
-                "measurement": var,
+                "measurement": self.measure,
                 "tags": {
-                    "host": "server01",
-                    "region": "us-west"
+                    "label": var,
                 },
-                "time": "2009-11-10T23:00:00Z",
+                "time": curr_time,
                 "fields": {
-                    "value": 0.64
+                    "value": self.val
                 }
             }
         ]
-        self.client = InfluxDBClient('localhost', 8086, 'jcoleman', 'four', 'particles')
-        self.client.write_points(json_body)
+        client.write_points(json_body)
 
 
 def generate_device_obj():
     connected_devices = get_connected_devices()
     print "\n\nLooking up Particle data..."
     for index, connected_device in enumerate(connected_devices):
-        devices.append( ConnectedDevice(connected_device["id"]) )
+        devices.append(ConnectedDevice(connected_device["id"]))
         print "Added data for " + devices[index].name
-    print "Done!"
-
-
-def write_vals_to_CSV():
-    # generates file name
-    # starttime = datetime.datetime.now().strftime('%m_%d_%Y_%H_%M_%S')
-    # filename = starttime + file_suffix
-
-    end = time.time() + collect_for
-    frequency = 0  # in seconds
-
-    # CSV Stuff
-    row = []
-
-    with open(filename, "a") as file:
-        print "Beginning collection for " + str(collect_for) + " seconds."
-        writer = csv.writer(file, delimiter=",")
-        writer.writerow(header)
-        while time.time() < end:
-            #
-            time_str = str(datetime.datetime.isoformat(datetime.datetime.now()))
-            for device in devices:
-                for var in device.variables:
-                        row.append(time_str)
-                        print time_str + " ",
-                        row.append(var)
-                        print var + " ",
-                        try:
-                            row.append(device.return_a_variable(var))
-                            print str(device.return_a_variable(var)) + " ",
-                        except:
-                            row.append(None)
-                            print "ERROR ",
-                        row.append(device.name)
-                        print device.name + " ",
-                        row.append(device.location)
-                        print device.location + " "
-                        writer.writerow(row)
-                        row = []
-                    # except requests.exceptions.ConnectionError:
-                        writer.writerow(row)
-    print "\ncompleted " + str(collect_for) + " seconds of collection."
+    print "Done!\n"
 
 devices = []
 generate_device_obj()
-write_vals_to_CSV()
 
 
+def influx_push():
+    current_time = time.time()
+    end = time.time() + collect_for
+    while current_time < end:
+        current_time = time.time()
+        time_str = str(datetime.datetime.fromtimestamp(current_time))
+        # print "The time is " + time_str
+        for device in devices:
+            for var in device.variables:
+                try:
+                    device.influx_push(var, time_str)
+                except:
+                    pass
 
+    print "\ncompleted " + str(collect_for) + " seconds of collection."
+
+influx_push()

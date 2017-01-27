@@ -18,8 +18,8 @@ class Measurements:
                 "ldrVal",
                 "ldrVal2"
             ]
-
         }
+
     def get_measurements(self):
         for measure in self.known_pairs:
             print measure
@@ -28,3 +28,9 @@ class Measurements:
         for measure in self.known_pairs:
             for _input in self.known_pairs[measure]:
                 print _input
+
+    def return_measurement(self, var):
+        for measure in self.known_pairs:
+            if var in self.known_pairs[measure]:
+                return measure
+        return "unknown"
