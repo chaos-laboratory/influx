@@ -12,8 +12,8 @@ device_API = 'https://api.particle.io/v1/devices/?access_token=' + access_token
 file_name = datetime.datetime.isoformat(datetime.datetime.now())
 
 # influx creds
-usr = 'jcoleman'
-passwd = 'four'
+usr = ''
+passwd = ''
 db = 'particles'
 client = InfluxDBClient('localhost', 8086, usr, passwd, db)
 
