@@ -122,6 +122,8 @@ class ConnectedDevice:
                 "measurement": self.measure,
                 "tags": {
                     "label": var,
+                    "location": self.location,
+                    "name": self.name
                 },
                 "time": curr_time,
                 "fields": {
@@ -146,7 +148,10 @@ generate_device_obj()
 
 def influx_push():
     current_time = time.time()
-    end = time.time() + collect_for
+    print current_time
+    end = current_time + collect_for
+    print "Beginning Data Collection.\nThe time is:  ",
+    print datetime.datetime.isoformat(datetime.datetime.fromtimestamp(current_time))
     while current_time < end:
         current_time = time.time()
         time_str = str(datetime.datetime.fromtimestamp(current_time))
