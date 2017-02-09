@@ -17,6 +17,9 @@ class Measurements:
             "photo_resist": [
                 "ldrVal",
                 "ldrVal2"
+            ],
+            "threshold": [
+             "threshold_broken"
             ]
         }
 

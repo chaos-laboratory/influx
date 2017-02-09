@@ -1,74 +1,40 @@
 from influxdb import InfluxDBClient
+import sseclient
 import requests
 import datetime as datetime
 import time as time
 import knowntypes
 import thermistor
+import particle
 
+# Particle creds
 access_token = "a29cef4e07f57df80ddcc15fb5857e9fc5b98ce0"
 
 device_API = 'https://api.particle.io/v1/devices/?access_token=' + access_token
 
-file_name = datetime.datetime.isoformat(datetime.datetime.now())
-
-# influx creds
+# Influx creds
 usr = ''
 passwd = ''
 db = 'particles'
 client = InfluxDBClient('localhost', 8086, usr, passwd, db)
-
-# this is used to get the correct series to publish to
-get_measurements = knowntypes.Measurements()
-# client.create_database(file_name)
-# end influx stuff
 
 devices = []
 connected_devices = []
 
 collect_for = 10*60  # seconds
 
-static_variables = ["location"]
-
-# header = ["Time", "Event", "Value", "ID", "Location"]
-
-
-def device_api_call():
-    devices_req = requests.get(device_API)
-    devices_req_json = devices_req.json()
-    return devices_req_json
-
 
 def get_connected_devices():
     claimed_devices = device_api_call()
-    connected_devices = [device for device in claimed_devices if device["connected"]]
+    _connected_devices = [device for device in claimed_devices if device["connected"]]
 
-    return connected_devices
-
-
-def truncate_strings(_strings, cut_mark):
-    truncated_strings = [string[cut_mark:] for string in _strings]
-    return truncated_strings
-
-
-def strings_to_ints(_list):
-    _list = [int(item) for item in _list]
-    return _list
-
-
-def json_sort(_list, _key):
-    # this function will sort a list of JSON using values of one key
-    keys = [item[_key] for item in _list]
-    keys = truncate_strings(keys, 8)
-    keys = strings_to_ints(keys)
-    keys, _list = (list(t) for t in zip(*sorted(zip(keys, _list))))
-
-    return _list
+    return _connected_devices
 
 
 class ConnectedDevice:
     def __init__(self, unique_id):
         self.id = unique_id
-        self.location = "unknown"
+        self.location = ""
         self.name = ""
         self.api = "https://api.particle.io/v1/devices/" + self.id + "/?access_token=" + access_token
         self.variables = []
@@ -77,6 +43,7 @@ class ConnectedDevice:
 
         self.get_meta_data()
         self.measure = ""
+        self.var_url = ""
         # self.print_attributes()
 
     def url_json(self, url):
@@ -114,7 +81,7 @@ class ConnectedDevice:
         return self.result
 
     def influx_push(self, var, curr_time):
-        self.measure = get_measurements.return_measurement(var)
+        self.measure = knowntypes.get_measurements.return_measurement(var)
         self.val = self.return_a_variable(var)
         if self.measure == "temp_resist":
             self.val = thermistor.resist_to_celsius(float(self.val))
@@ -133,19 +100,17 @@ class ConnectedDevice:
                 }
             }
         ]
-        client.write_points(json_body)
+        return json_body
+        # client.write_points(json_body)
 
 
 def generate_device_obj():
-    connected_devices = get_connected_devices()
+    _connected_devices = get_connected_devices()
     print "\n\nLooking up Particle data..."
-    for index, connected_device in enumerate(connected_devices):
+    for index, connected_device in enumerate(_connected_devices):
         devices.append(ConnectedDevice(connected_device["id"]))
         print "Added data for " + devices[index].name
     print "Done!\n"
-
-devices = []
-generate_device_obj()
 
 
 def influx_push():
@@ -167,4 +132,6 @@ def influx_push():
 
     print "\ncompleted " + str(collect_for) + " seconds of collection."
 
+devices = []
+generate_device_obj()
 influx_push()

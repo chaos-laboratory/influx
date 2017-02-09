@@ -1,0 +1,14 @@
+{
+  "id":"49004e000b51353335323535",
+  "name":"CHAOS_PH001",
+  "last_app":null,
+  "last_ip_address":"66.180.180.112",
+  "last_heard":"2017-02-08T18:49:56.010Z",
+  "product_id":6,
+  "connected":true,
+  "platform_id":6,
+  "cellular":false,
+  "status":"normal",
+  "current_build_target":"0.6.0",
+  "default_build_target":"0.6.0"
+}
