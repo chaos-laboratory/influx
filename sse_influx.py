@@ -7,8 +7,11 @@ import knowntypes
 import thermistor
 import particle
 
+# All credentials are stored in a GIT IGNORED file
+import credentials as cd
+
 # Particle creds
-access_token = "a29cef4e07f57df80ddcc15fb5857e9fc5b98ce0"
+access_token = cd.access_token
 
 device_API = 'https://api.particle.io/v1/devices/?access_token=' + access_token
 
