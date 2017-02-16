@@ -16,10 +16,12 @@ access_token = cd.access_token
 device_API = 'https://api.particle.io/v1/devices/?access_token=' + access_token
 
 # Influx creds
-usr = ''
-passwd = ''
-db = 'particles'
-client = InfluxDBClient('localhost', 8086, usr, passwd, db)
+usr = cd.usr
+passwd = cd.passwd
+db = cd.db
+host = cd.host
+port = cd.port
+client = InfluxDBClient(host, port, usr, passwd, db)
 
 devices = []
 connected_devices = []

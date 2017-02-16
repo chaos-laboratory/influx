@@ -7,16 +7,19 @@ from pytz import timezone
 import pytz
 import json
 
+# this is to hide our credentials with a GIT IGNORE file
 import credentials as cd
 
-# Particle creds
+# Particle credentials
 access_token = cd.access_token
 
-# Influx creds
-usr = ''
-passwd = ''
-db = 'particles'
-influx = InfluxDBClient('localhost', 8086, usr, passwd, db)
+# Influx credentials
+usr = cd.usr
+passwd = cd.passwd
+db = cd.db
+host = cd.host
+port = cd.port
+client = InfluxDBClient(host, port, usr, passwd, db)
 
 # SSE
 url = 'https://api.particle.io/v1/events/threshold?access_token=a29cef4e07f57df80ddcc15fb5857e9fc5b98ce0'

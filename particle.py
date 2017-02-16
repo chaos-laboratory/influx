@@ -1,10 +1,36 @@
 import requests
 
+# All credentials are stored in a GIT IGNORED file
+import credentials as cd
+
 # make sure this is current
-access_token = 'a29cef4e07f57df80ddcc15fb5857e9fc5b98ce0'
+access_token = cd.access_token
 
 # will hold all registered particles
 particles = {}
+
+
+class Particle:
+    def __init__(self, _id, name, last_app, last_ip_address, last_heard, product_id, connected, platform_id,
+                 cellular, status):
+        # Particle defined attributes
+        self.id = _id
+        self.name = name
+        self.last_app = last_app
+        self.last_ip_address = last_ip_address
+        self.last_heard = last_heard
+        self.product_id = product_id
+        self.connected = connected
+        self.platform_id = platform_id
+        self.cellular = cellular
+        self.status = status
+        self.current_build_target = None
+        self.default_build_target = None
+
+        # Chaos defined attributes
+        self.location = ""
+        self.api = "https://api.particle.io/v1/devices/" + self.id + "/?access_token=" + access_token
+        self.variables = []
 
 
 class DeviceAPI:
@@ -26,7 +52,7 @@ class DeviceAPI:
         self.claimed = len(self.get_particles())
         return self.claimed
 
-    def claimed_particles(self):
+    def update_particles(self):
         for i in self.get_particles():
             particles[i['id']] = Particle(
                 i['id'],
@@ -46,13 +72,12 @@ class DeviceAPI:
 
     def connected_particles(self):
         if particles:
-            self.claimed_particles()  # update the device statuses
+            self.update_particles()  # update the device statuses
             for i in particles:
                 if particles[i].connected:
-                    print particles[i].name,
-                    print particles[i].id
+                    print particles[i].name
         else:
-            self.claimed_particles()
+            self.update_particles()
             self.connected_particles()
 
 d = DeviceAPI()

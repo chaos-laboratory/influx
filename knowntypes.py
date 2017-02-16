@@ -2,8 +2,8 @@ class Measurements:
     def __init__(self):
         self.known_pairs = {
             "temp_c": [
-                "object",
-                "ambient"
+                "Tank",
+                "Ambient"
             ],
             "temp_resist": [
                 "condReturn",
@@ -15,8 +15,8 @@ class Measurements:
                 "micVol"
             ],
             "photo_resist": [
-                "ldrVal",
-                "ldrVal2"
+                "Pump1",
+                "Pump2"
             ],
             "threshold": [
              "threshold_broken"
