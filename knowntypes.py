@@ -3,7 +3,12 @@ class Measurements:
         self.known_pairs = {
             "temp_c": [
                 "Tank",
-                "Ambient"
+                "Ambient",
+                "temperature",
+                'temp_c'
+            ],
+            'humidity': [
+                'humidity'
             ],
             "temp_resist": [
                 "condReturn",

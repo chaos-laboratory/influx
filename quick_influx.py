@@ -2,8 +2,11 @@ from influxdb import InfluxDBClient
 import datetime as datetime
 import time as time
 import requests
-import json
 
+# 100K ohm Thermistor Library
+import thermistor as therm
+
+# this imports a list of known measurement relationships
 import knowntypes as kt
 
 # this is to hide our credentials with a GIT IGNORE file
@@ -28,6 +31,19 @@ particles = {}
 connected_particles = {}
 variables = []
 
+#
+good_particles = [
+    '1c003c000347343339373536',
+    '46002a000b51353335323535',
+    '30004b000a51353335323536'
+]
+
+ignore_vars = [
+    'location',
+    'resistance'
+]
+
+
 class Particle:
     def __init__(self, _id, name, last_app, last_ip_address, last_heard, product_id, connected, platform_id,
                  cellular, status):
@@ -50,6 +66,7 @@ class Particle:
         self.api = "https://api.particle.io/v1/devices/" + self.id + "/?access_token=" + access_token
         self.variables = []
 
+
 # deviceAPI
 class DeviceAPI:
     def __init__(self):
@@ -71,18 +88,18 @@ class DeviceAPI:
         return self.claimed
 
     def update_particles(self):
-        for i in self.get_particles():
-            particles[i['id']] = Particle(
-                i['id'],
-                i['name'],
-                i['last_app'],
-                i['last_ip_address'],
-                i['last_heard'],
-                i['product_id'],
-                i['connected'],
-                i['platform_id'],
-                i['cellular'],
-                i['status'],
+        for l in self.get_particles():
+            particles[l['id']] = Particle(
+                l['id'],
+                l['name'],
+                l['last_app'],
+                l['last_ip_address'],
+                l['last_heard'],
+                l['product_id'],
+                l['connected'],
+                l['platform_id'],
+                l['cellular'],
+                l['status'],
                 # Not all devices have this, uncommenting causes a KeyError
                 # i['current_build_target'],
                 # i['default_build_target'],
@@ -91,9 +108,9 @@ class DeviceAPI:
     def connected_particles(self):
         if particles:
             self.update_particles()  # update the device statuses
-            for i in particles:
-                if particles[i].connected:
-                    print particles[i].name
+            for l in particles:
+                if particles[l].connected:
+                    print particles[l].name
         else:
             self.update_particles()
             self.connected_particles()
@@ -105,7 +122,7 @@ while True:
         p = particles[i]
         if p.connected:
             try:
-                if p.id == '1c003c000347343339373536':
+                if p.id in good_particles:
                     current_time = time.time()
                     time_str = str(datetime.datetime.fromtimestamp(current_time))
                     print
@@ -117,12 +134,14 @@ while True:
                     # v_url = "https://api.particle.io/v1/devices/" + p.id + "/" + "" + "?access_token=" + access_token
                     # try:
                     for v in j['variables']:
-                        if v != 'location':
-                            print v,
+                        if v not in ignore_vars:
+                            # print v,
                             v_url = "https://api.particle.io/v1/devices/" + p.id + "/" + v + "?access_token=" + access_token
                             req = requests.get(v_url)
                             k = req.json()['result']
-                            print k
+                            # print k
+                            if m.return_measurement(v) == 'temp_resist':
+                                k = therm.resist_to_celsius(k)
                             json_body = [
                                 {
                                     "measurement": m.return_measurement(v),
@@ -148,9 +167,8 @@ while True:
                             print 'fields',
                             print json_body[0]['fields']['value']
 
-                            client.write_points(json_body)
+                            # client.write_points(json_body)
             except:
                 print 'API Error'
 
-    time.sleep(1)
 
