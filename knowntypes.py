@@ -1,30 +1,57 @@
+from termcolor import colored
+
+
 class Measurements:
     def __init__(self):
         self.known_pairs = {
             "temp_c": [
-                "Tank",
-                "Ambient",
+                "tank",
+                "ambient",
                 "temperature",
-                'temp_c'
+                "_temperature",
+                'temp_c',
+                'temp',
+                "condreturn",
+                "condsupply",
+                "tanksupply",
+                "tankreturn"
             ],
             'humidity': [
                 'humidity'
             ],
-            "temp_resist": [
-                "condReturn",
-                "condSupply",
-                "tnkSupply",
-                "tnkReturn"
-            ],
             "vol": [
-                "micVol"
+                "micvol"
             ],
             "photo_resist": [
-                "Pump1",
-                "Pump2"
+                "pump1",
+                "pump2",
+                'light1',
+                'light2',
             ],
             "threshold": [
              "threshold_broken"
+            ],
+            "location": [
+                "location"
+            ],
+            'rate': [
+                'rate'
+            ],
+            'resistance': [
+                'resistance'
+            ],
+            'ppm': [
+                'co2'
+            ],
+            'calibration': [
+                'calibrate_1',
+                'calibrate_2',
+                'calibrate_3',
+                'calibrate_4',
+                'calibrate_5',
+                'calibrate_6',
+                'calibrate_7',
+                'calibrate_8',
             ]
         }
 
@@ -37,8 +64,22 @@ class Measurements:
             for _input in self.known_pairs[measure]:
                 print _input
 
-    def return_measurement(self, var):
+    def return_measurement(self, label):
         for measure in self.known_pairs:
-            if var in self.known_pairs[measure]:
+            # print '\n' + colored(measure, 'red')
+            # for i in self.known_pairs[measure]:
+            #     # print i,
+            #     if i == label:
+            #         # print colored('FOUND', 'green'),
+            #     # else:
+            #     #     print
+            # print self.known_pairs[measure],
+            if label.lower() in self.known_pairs[measure]:
+                # print colored('FOUND', 'green')
+                # print label.lower()
                 return measure
-        return "unknown"
+        return 'unknown'
+
+
+# m = Measurements()
+# m.return_measurement('TankSupply')

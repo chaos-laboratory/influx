@@ -10,12 +10,12 @@ import particle
 # All credentials are stored in a GIT IGNORED file
 import credentials as cd
 
-# Particle creds
+# Particle credentials
 access_token = cd.access_token
 
 device_API = 'https://api.particle.io/v1/devices/?access_token=' + access_token
 
-# Influx creds
+# Influx credentials
 usr = cd.usr
 passwd = cd.passwd
 db = cd.db

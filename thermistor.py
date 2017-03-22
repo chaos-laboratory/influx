@@ -18,6 +18,7 @@ def generate_lookup_index(array):
 
 
 def linear_interpolate(resis_before, resis_after, temp_before, temp_after, resistance):
+    resistance = float(resistance)
     resis_gap = resis_before - resis_after  # find delta resistance
     multiplier = (resis_before - resistance) / resis_gap
     temp_gap = temp_after - temp_before  # find delta temp.
@@ -39,7 +40,7 @@ def interpolate_kelvin(resistance):
 
 
 def resist_to_celsius(resist):
-    celsius = float(interpolate_kelvin(resist)) - 273.15  # to convert to celsius
+    celsius = interpolate_kelvin(resist) - 273.15  # to convert to celsius
     # print("The temp in celsius is: " + str(celsius))
     return celsius
 
@@ -51,5 +52,6 @@ lookUp_index = generate_lookup_index(index)
 #     print(str(val[0]) + " " + str(val[1]))
 
 
+# resist_to_celsius()
 
 
